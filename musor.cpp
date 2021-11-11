@@ -321,3 +321,52 @@ void constructTree()
     tnode finalNode = freqQueue.dequeue();
     tree.copyTree(&finalNode);
 }
+
+
+
+
+
+//2
+
+struct BinaryTree {
+    tnode* root;
+
+    BinaryTree() : root(nullptr) {}
+    BinaryTree(tnode* _root) : root(_root) {}
+    unsigned int getFreq() const {
+        return root->freq;
+    }
+    tnode* getRoot() const {
+        return root;
+    }
+
+    void inOrder(tnode* _root) {				// Displaying binary tree
+        if (_root != nullptr) {
+            inOrder(_root->left);
+            std::cout << "|     " << _root->letter<< "    |     " << _root->freq << "\t|" << std::endl;
+            std::cout << " ----------------------- " << std::endl;
+            inOrder(_root->right);
+        }
+    }
+};
+
+
+
+struct PriorityQueue {
+    std::vector <BinaryTree> data;
+    int n;
+
+    PriorityQueue() : n(0) {}
+    void insert(BinaryTree newTree) {
+        if (n==0)
+            data.push_back(newTree);
+        else {
+            for (int i = 0; i < n; i++)
+                if(data.at(i).getFreq()>newTree.getFreq()) {
+                    data.at(i) = newTree;
+                }
+        }
+        n++;
+    }
+
+};

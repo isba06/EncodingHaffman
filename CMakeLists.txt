@@ -3,4 +3,4 @@ project(EncodingHaffman)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(EncodingHaffman main.cpp musor.cpp)
+add_executable(EncodingHaffman main.cpp)
