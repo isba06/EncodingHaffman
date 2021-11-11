@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 #include <queue>
+#include <unordered_map>
 /*
 std::string nameFile, buff;
 //std::cin >> nameFile;
@@ -18,41 +19,16 @@ std::cout<<"Not open file"<<std::endl;
 }
 */
 struct tnode {
-    unsigned int freq;
+    long freq;
     char letter;
     tnode* left;
     tnode* right;
-    tnode() : letter('0'), freq(0), left(nullptr), right(nullptr) {}
-    tnode(char _letter, unsigned int fr) : letter(_letter), freq(fr), left(nullptr), right(nullptr) {}
-
-/*    void addChild(tnode* newNode) {
-        if(left==nullptr) {
-            left = newNode;
-        }
-        else {
-            if(left->freq <= newNode->freq)
-                right = newNode;
-            else {
-                right = left;
-                left = newNode;
-            }
-        }
-        freq += newNode->freq;
-    }*/
     bool isLeaf() const {
         return ((left == nullptr)&& (right==nullptr));
     }
-
-    void printNode(tnode *root) const{
-        if(root == nullptr)
-            return;
-        std::cout<<root->freq<<" "<<root->letter<<std::endl;
-        printNode(root->left);
-        printNode(root->right);
-        }
 };
 
-tnode* setNode(char _let, unsigned int _freq, tnode* _left, tnode* _right ) {
+tnode* setNode(char _let, long _freq, tnode* _left, tnode* _right ) {
     tnode* node = new tnode();
     node->letter = _let;
     node->freq = _freq;
@@ -70,11 +46,11 @@ struct comp {
     }
 };
 
-void encode (tnode* root, std::string str, std::map<char,std::string> &huffmanCode)
+void encode (tnode* root, std::string str, std::unordered_map<char,std::string> &huffmanCode)
 {
     if (root==nullptr)
         return;
-    if (!root->left && !root->right) {
+    if (!(root->left) && !(root->right)) {
         huffmanCode[root->letter] = str;
     }
     encode(root->left, str + "0", huffmanCode);
@@ -86,13 +62,14 @@ void encode (tnode* root, std::string str, std::map<char,std::string> &huffmanCo
 
 void buildTreeHuff (std::string namereadfile, std::string namecreatefile)
 {
-    std::map <char, int> tablefreq;
+    std::unordered_map <char, long> tablefreq;
     char scanletter;
     std::ifstream fin(namereadfile);
-
     if (fin.is_open()) {
         while(!fin.eof()) {
             fin.get(scanletter);
+            if(fin.eof())
+                break;
             tablefreq[scanletter]++;
         }
     }
@@ -106,17 +83,20 @@ void buildTreeHuff (std::string namereadfile, std::string namecreatefile)
     for(auto item: tablefreq) {
         priorityQueue.push(setNode(item.first, item.second, nullptr, nullptr));
     }
-
+    std::cout << priorityQueue.top() << std::endl;
     while(priorityQueue.size()!=1) {
+        std::cout << priorityQueue.top() << std::endl;
         tnode *left = priorityQueue.top(); priorityQueue.pop();
         tnode *right = priorityQueue.top(); priorityQueue.pop();
-        unsigned int sum = left->freq + right->freq;
-        priorityQueue.push(setNode((char) 0, sum, left, right));
+        long sum = left->freq + right->freq;
+        priorityQueue.push(setNode('\0', sum, left, right));
     }
     tnode* root = priorityQueue.top();
-    std::map <char, std::string> huffCode;
+    std::unordered_map <char, std::string> huffCode;
     encode(root, "", huffCode);
     std::string str = "";
+
+
 
     std::ofstream fout(namecreatefile);
     fin.close();
@@ -124,6 +104,8 @@ void buildTreeHuff (std::string namereadfile, std::string namecreatefile)
     if (fin.is_open()) {
         while(!fin.eof()) {
             fin.get(scanletter);
+            if(fin.eof())
+                break;
             str+= huffCode[scanletter];
         }
     }
@@ -137,31 +119,15 @@ void buildTreeHuff (std::string namereadfile, std::string namecreatefile)
         fout<<item.second;
         std::cout << item.first << " " << item.second << std::endl;
     }
+    for (auto&& item : tablefreq)
+        std::cout << item.first << ": " << item.second << std::endl;
     fout.close();
     fin.close();
 }
 
 
-
 int main() {
-  /*  std::map <char, int> tablefreq;
-    std::string nameFile;
-    char sim;
-    //std::cin >> nameFile;
-    //nameFile = "testfile.file";
-    std::ifstream fin("testfile");
-    if (fin.is_open()) {
-        while(!fin.eof()) {
-            fin.get(sim);
-            tablefreq[sim]++;
-        }
-    }
-    else {
-        std::cout<<"Not open file"<<std::endl;
-    }
-    fin.close();
 
-*/
     buildTreeHuff("testfile", "writefile");
 
     //for (auto&& item : tablefreq)
