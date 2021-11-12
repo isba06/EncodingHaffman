@@ -26,8 +26,23 @@ struct tnode {
     bool isLeaf() const {
         return ((left == nullptr)&& (right==nullptr));
     }
-};
 
+};
+void print(tnode* root){
+    if (root==nullptr)
+        return;
+    if (!(root->left) && !(root->right)) {
+        std::cout <<"LETTER:" <<root->letter<<" FREQ:"<<root->freq<<std::endl;
+    }
+    std::cout <<"left" <<std::endl;
+    std::cout <<"|" <<std::endl;
+    print(root->left);
+    std::cout <<"right" <<std::endl;
+    std::cout <<"|" <<std::endl;
+    print(root->right);
+
+
+}
 tnode* setNode(char _let, long _freq, tnode* _left, tnode* _right ) {
     tnode* node = new tnode();
     node->letter = _let;
@@ -85,13 +100,13 @@ void buildTreeHuff (std::string namereadfile, std::string namecreatefile)
     }
     std::cout << priorityQueue.top() << std::endl;
     while(priorityQueue.size()!=1) {
-        std::cout << priorityQueue.top() << std::endl;
         tnode *left = priorityQueue.top(); priorityQueue.pop();
         tnode *right = priorityQueue.top(); priorityQueue.pop();
         long sum = left->freq + right->freq;
         priorityQueue.push(setNode('\0', sum, left, right));
     }
     tnode* root = priorityQueue.top();
+    print(root);
     std::unordered_map <char, std::string> huffCode;
     encode(root, "", huffCode);
     std::string str = "";
