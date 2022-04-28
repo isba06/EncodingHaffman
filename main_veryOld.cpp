@@ -28,21 +28,15 @@ struct tnode {
     }
 
 };
-void print(tnode* root){
-    if (root==nullptr)
-        return;
-    if (!(root->left) && !(root->right)) {
-        std::cout <<"LETTER:" <<root->letter<<" FREQ:"<<root->freq<<std::endl;
+template <typename T>
+void print_queue(T q) { // NB: pass by value so the print uses a copy
+    while(!q.empty()) {
+        std::cout << q.top()->letter<<q.top()->freq<< ' ';
+        q.pop();
     }
-    std::cout <<"left" <<std::endl;
-    std::cout <<"|" <<std::endl;
-    print(root->left);
-    std::cout <<"right" <<std::endl;
-    std::cout <<"|" <<std::endl;
-    print(root->right);
-
-
+    std::cout << '\n';
 }
+
 tnode* setNode(char _let, long _freq, tnode* _left, tnode* _right ) {
     tnode* node = new tnode();
     node->letter = _let;
@@ -57,7 +51,7 @@ tnode* setNode(char _let, long _freq, tnode* _left, tnode* _right ) {
 struct comp {
     bool operator() (tnode* l, tnode* r)
     {
-        return l->freq > r->freq;
+        return ((l->freq) > (r->freq));
     }
 };
 
@@ -93,27 +87,30 @@ void buildTreeHuff (std::string namereadfile, std::string namecreatefile)
         return;
     }
 
-    std::priority_queue<tnode*, std::vector<tnode*>, comp> priorityQueue;
+    std::priority_queue<tnode*, std::vector<tnode*>,  comp> priorityQueue, p1;
 
     for(auto item: tablefreq) {
         priorityQueue.push(setNode(item.first, item.second, nullptr, nullptr));
+        p1.push(setNode(item.first, item.second, nullptr, nullptr));
     }
-    std::cout << priorityQueue.top() << std::endl;
-    while(priorityQueue.size()!=1) {
+    print_queue(p1);
+    while(priorityQueue.size()>1) {
+
         tnode *left = priorityQueue.top(); priorityQueue.pop();
         tnode *right = priorityQueue.top(); priorityQueue.pop();
         long sum = left->freq + right->freq;
         priorityQueue.push(setNode('\0', sum, left, right));
+        std::cout << priorityQueue.top()->freq <<priorityQueue.top()->letter << std::endl;
     }
+    std::cout << priorityQueue.top()->freq << std::endl;
     tnode* root = priorityQueue.top();
-    print(root);
+    //print(root);
     std::unordered_map <char, std::string> huffCode;
     encode(root, "", huffCode);
     std::string str = "";
 
 
 
-    std::ofstream fout(namecreatefile);
     fin.close();
     fin.open(namereadfile);
     if (fin.is_open()) {
@@ -128,7 +125,27 @@ void buildTreeHuff (std::string namereadfile, std::string namecreatefile)
         std::cout<<"Not open file"<<std::endl;
         return;
     }
-    fout<<str;
+    std::ofstream fout(namecreatefile, std::ios::out | std::ios::binary);
+
+
+    unsigned char buf = 0;
+    int count = 0 , global_counter=0;
+    for (unsigned char s : str)
+    {
+        buf = buf | (s & 1) << (7 - count);
+        count++;
+        global_counter++;
+        if (count == 8)
+        {
+            count = 0;
+            fout << buf;
+            buf = 0;
+        }
+    }
+    if (count>0)
+    {
+        fout << buf;
+    }
 
     for(auto item: huffCode) {
         fout<<item.second;
@@ -143,7 +160,7 @@ void buildTreeHuff (std::string namereadfile, std::string namecreatefile)
 
 int main() {
 
-    buildTreeHuff("testfile", "writefile");
+    buildTreeHuff("bib", "writefile");
 
     //for (auto&& item : tablefreq)
     //    std::cout << item.first << ": " << item.second << std::endl;
